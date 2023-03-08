@@ -1,0 +1,96 @@
+<script runat=server>
+  
+    Platform.Load("Core","1.1.1");
+    var honeypot;
+    var email;
+    var subscriber;
+    var subscriberkey;
+    var FileName;
+    var time = Platform.Function.Now();
+ 
+
+/* check if honeypot is not empty */
+  honeypot = Request.GetQueryStringParameter("body")
+  if(honeypot){
+    throw Platform.Function.ParseJSON('["bot detected"]');
+  }
+        /* Set parameters */
+        email = Request.GetQueryStringParameter("email");
+        FileName = Request.GetQueryStringParameter("FileName");
+  
+  if(!email){
+    throw Platform.Function.ParseJSON('["email is empty"]');
+  }
+        // Lookup subscriber via email //
+        subscriber = Subscriber.Retrieve({Property:"EmailAddress",SimpleOperator:"equals",Value:email}); 
+        subscriberkey = subscriber[0].SubscriberKey
+  
+       // initiate DEs //
+        var PB_DataExtension = DataExtension.Init("PhotoBooth_DE");
+        // Platform.Response.Write("DE INIT");
+
+try{
+         if(subscriberkey){
+          var existingsubscriber = PB_DataExtension.Rows.Add({
+            SUBSCRIBER_KEY:subscriberkey,
+            EMAIL:email,
+            FILE_NAME: FileName
+          });
+         }   
+         else{
+         subscriberkey = Platform.Function.GUID();
+          var newsubscriber = PB_DataExtension.Rows.Add({
+          SUBSCRIBER_KEY:subscriberkey,
+          EMAIL:email,
+          FILE_NAME: FileName
+        });
+        }
+} catch(error){
+}
+
+  /* fire JB Entry Event */
+ try{
+  var JourneyGUID = Platform.Function.GUID();
+  var authEndpoint = 'https://mczgck6bjsgnhljf3zbctxtrqxpy.auth.marketingcloudapis.com/';  //API endpoint
+    var payload = {
+        client_id: "imoqcz5oxlxz3a4bd5fdjvn4",    //pass Client ID
+        client_secret: "Adj6KQUfFKXIWbz6zru7DLxO",    //pass Client Secret
+        grant_type: "client_credentials" 
+    };
+    var url = authEndpoint + '/v2/token'
+    var contentType = 'application/json'
+
+    var accessTokenRequest = HTTP.Post(url, contentType, Stringify(payload));
+    if (accessTokenRequest.StatusCode == 200) {
+        var tokenResponse = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+        var accessToken = tokenResponse.access_token
+        var rest_instance_url = tokenResponse.rest_instance_url
+    };
+
+    //make api call to inject contact to a journey  
+    if (accessToken != null) {
+        var headerNames = ["Authorization"];
+        var headerValues = ["Bearer " + accessToken];
+        var jsonBody = {
+            "ContactKey": email,
+            "EventDefinitionKey": "APIEvent-57d8b8cf-7381-7b0b-3a54-fbb41dcfba2b",    //provide journey EVENT DEFINITION KEY
+            "Data": {
+                "JourneyGUID": JourneyGUID,
+                "EMAIL": email,
+                "SUBSCRIBER_KEY":subscriberkey,
+                "FileName":FileName
+            }
+        };
+
+        var requestUrl = rest_instance_url + "/interaction/v1/events";
+
+        var fireEntryEvent = HTTP.Post(requestUrl, contentType, Stringify(jsonBody), headerNames, headerValues);
+   
+      if (fireEntryEvent.StatusCode == 201) {
+        Platform.Response.Write(Platform.Function.ContentBlockByKey('PhotoBooth_success_key'));
+      }
+    };
+} catch (error) {
+    Platform.Response.Write(Stringify(error));
+}
+</script>
