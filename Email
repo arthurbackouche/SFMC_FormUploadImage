@@ -1,0 +1,17 @@
+%%[
+
+  VAR @FileName
+  SET @FileName = AttributeValue("FileName")
+  
+ 
+  SET @FileName_clean = Substring(@FileName, 1, Subtract(Length(@FileName), 4))
+
+  
+  SET @imageTag = ContentImageByKey(@FileName_clean, "7c21a5a8-0caa-405a-b50c-973f5b1607b7")
+
+
+]%%
+
+%%=v(@FileName)=%%
+%%=v(@FileName_clean)=%%
+%%=v(@imageTag)=%%
