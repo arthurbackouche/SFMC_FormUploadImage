@@ -1,0 +1,94 @@
+<!DOCTYPE html>  
+<html class="no-js"> 
+  <!--<![endif]-->
+  <head>
+    <style type="text/css">
+    </style>
+    <meta name="ROBOTS" content="INDEX,FOLLOW">
+    <meta name="keywords" content="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <title>Form </title>
+    <!-- Links from Sign Up -->
+    
+    
+    <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' rel='stylesheet'>
+  </head>
+  <body style= "background-color: transparent;" class="subscribe">
+    <!-- Content Aera for sign up  Start -->
+    <div>
+      <script language="ampscript" runat="server">
+        If @context == "SUBMIT" Then
+      </script>
+      <p>
+        Thank you for subscribing
+      </p>
+      <script language="ampscript" runat="server">
+        Else
+      </script>
+      <form action="https://mczgck6bjsgnhljf3zbctxtrqxpy.pub.sfmc-content.com/4qeg1qrqsls">
+        <input type="hidden" name="context" id="context" value="SUBMIT" />
+        <div id="internal">
+          <input type="text" name="body" id="body" value="" /> 
+        </div>
+        <p class="kxtPBB">
+          Email*
+        </p>
+        <div class="field">
+          <input type="email" style="width: 100%;height:50px; border-radius: 0px;   border:1px solid #ffffff;" name="email" id="email" placeholder="Enter your email here" required/>
+        </div>
+        <p>
+          Please select a file to upload:
+        </p>
+<br>
+<input name=FileName id="file" type="file" accept="image/*">
+<br>
+        <!-- Subscribe Row -->
+        <input class="subscribeButton" id="button" type="submit" value="Subscribe" /> 
+      </form>
+    </div>
+    <script language="ampscript" runat="server">
+      EndIf
+    </script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->    
+  </body>
+</html>
+<script runat="client">
+  document.getElementById("button")
+      .addEventListener("click", function() {
+          var files = document.getElementById("file").files;
+          if (files.length > 0) {
+              getBase64(files[0]);
+          }
+      });
+
+  function getBase64(file) {
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = function() {
+
+          //prepare data to pass to processing page 
+          var fileEncoded = reader.result;
+          var base64enc = fileEncoded.split(";base64,")[1];
+          var fullFileName = document.getElementById("file").files[0].name;
+          var fileName = fullFileName.split(".")[0];
+          var assetName = fullFileName.split(".")[1];
+
+          fetch("https://mczgck6bjsgnhljf3zbctxtrqxpy.pub.sfmc-content.com/3ecdc0vpklh", {  //provide URL of the processing page
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                      base64enc: base64enc,
+                      fileName: fileName,
+                      assetName: assetName
+                  })
+              })
+      };
+  }
+</script>
+
+
